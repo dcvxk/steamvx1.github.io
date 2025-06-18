@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steam Zip Fetcher</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0a0714;
+      color: #d0cdfd;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      user-select: none;
+    }
+    .container {
+      background: linear-gradient(145deg, #120f26, #0b083b);
+      border-radius: 25px;
+      padding: 3rem 2.5rem;
+      width: 95%;
+      max-width: 480px;
+      box-shadow:
+        0 0 15px 3px rgba(138, 43, 226, 0.7),
+        inset 0 0 40px 1px #381f90;
+      text-align: center;
+      backdrop-filter: saturate(180%) blur(6px);
+    }
+    h2 {
+      font-weight: 700;
+      font-size: 2.3rem;
+      margin-bottom: 2rem;
+      color: #b9a9ff;
+      text-shadow: 0 0 8px #7a42ffcc;
+      letter-spacing: 0.08em;
+      user-select: text;
+    }
+    input[type="text"] {
+      width: 68%;
+      padding: 0.85rem 1rem;
+      font-size: 1.15rem;
+      border-radius: 15px 0 0 15px;
+      border: none;
+      outline: none;
+      background: #19122f;
+      color: #c0baff;
+      box-shadow:
+        inset 1px 1px 4px #3a2b7f,
+        inset -1px -1px 6px #211a49;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    input[type="text"]::placeholder {
+      color: #7c6fc5;
+      font-style: italic;
+    }
+    input[type="text"]:focus {
+      background: #261f4b;
+      color: #e6e3ff;
+      box-shadow:
+        inset 2px 2px 6px #5a43b8,
+        0 0 10px 2px #8a2bee;
+    }
+    button {
+      width: 30%;
+      padding: 0.85rem 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #eeeaff;
+      background: linear-gradient(135deg, #7b46f7, #5e21d4);
+      border: none;
+      border-radius: 0 15px 15px 0;
+      cursor: pointer;
+      box-shadow:
+        0 0 8px 0 #7b46f7cc,
+        inset 0 0 7px #a35eff;
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+      user-select: none;
+    }
+    button:hover {
+      background: linear-gradient(135deg, #9b6bff, #7b46f7);
+      box-shadow:
+        0 0 14px 4px #9b6bffcc,
+        inset 0 0 15px #c892ff;
+    }
+    .status {
+      margin-top: 1.6rem;
+      font-size: 1rem;
+      color: #9b8bff;
+      font-style: italic;
+      user-select: text;
+      min-height: 1.3em;
+      transition: color 0.3s ease;
+    }
+    a {
+      color: #b0a8ff;
+      text-decoration: underline;
+    }
+    a:hover {
+      color: #d0cdfd;
+      text-shadow: 0 0 8px #a18aff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-label="Buscador de Steam ZIPs">
+    <h2>Buscar en V1XXUNLOCKED</h2>
+    <input
+      type="text"
+      id="steamId"
+      placeholder="Introduce el ID..."
+      aria-label="Campo para introducir ID"
+      autocomplete="off"
+      spellcheck="false"
+      onkeydown="if(event.key === 'Enter') openZip()"
+    />
+    <button onclick="openZip()" aria-label="Botón para abrir archivo ZIP">STEAM.VX1</button>
+    <div class="status" id="status" aria-live="polite" aria-atomic="true">
+      Se buscará la ID para ver si está en nuestra DB.
+    </div>
+  </div>
+
+  <script>
+    function openZip() {
+      const id = document.getElementById('steamId').value.trim();
+      const status = document.getElementById('status');
+
+      if (!id) {
+        status.style.color = '#ff4f6e';
+        status.textContent = 'Por favor, introduce un ID válido.';
+        return;
+      }
+
+      const url = `https://steamdatabase.s3.eu-north-1.amazonaws.com/${id}.zip`;
+      status.style.color = '#9b8bff';
+      status.textContent = 'HACKED BY V1XX....';
+
+      window.open(url, '_blank');
+    }
+  </script>
+</body>
+</html>
