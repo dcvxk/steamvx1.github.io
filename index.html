@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STEAM.VX1 BETA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #b84dff;
+      --bg: #0b0b0b;
+      --glass: rgba(18, 18, 18, 0.75);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg);
+      font-family: 'Orbitron', sans-serif;
+      color: var(--primary);
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .glass-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      background: var(--glass);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      box-shadow: 0 0 30px #5f00ba88;
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .header {
+      font-size: 1.8rem;
+      color: #ffffff;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    .search-icon {
+      width: 50px;
+      height: 50px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .search-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--primary);
+    }
+
+    .search-icon:hover {
+      background: var(--primary);
+      box-shadow: 0 0 20px var(--primary);
+    }
+
+    .search-icon:hover svg {
+      fill: #000;
+    }
+
+    .search-bar {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out forwards;
+    }
+
+    input[type="text"] {
+      padding: 12px 20px;
+      width: 100%;
+      background: #111;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      font-size: 1rem;
+      color: var(--primary);
+      outline: none;
+      margin-top: 10px;
+      box-shadow: 0 0 8px #5f00ba88;
+    }
+
+    .autocomplete-list {
+      margin-top: 15px;
+      background: #111;
+      border-radius: 8px;
+      border: 1px solid var(--primary);
+      box-shadow: 0 0 10px #5f00ba77;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .autocomplete-item {
+      padding: 12px;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .autocomplete-item:hover {
+      background: var(--primary);
+      color: #000;
+    }
+
+    .appid-output {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #ffffff;
+    }
+
+    .appid-interactive {
+      color: var(--primary);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .appid-interactive:hover {
+      color: #fff;
+      text-shadow: 0 0 8px var(--primary);
+    }
+
+    .error-message {
+      margin-top: 10px;
+      color: #ff4d4d;
+      font-weight: bold;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="matrixCanvas"></canvas>
+
+<div class="glass-card">
+  <div class="header">STEAM.VX1 BETA</div>
+  <div class="search-icon" onclick="toggleSearch()">
+    <svg viewBox="0 0 24 24">
+      <path d="M10,2A8,8 0 0,1 18,10C18,11.85 17.3,13.55 16.12,14.84L21.71,20.43L20.29,21.85L14.7,16.26C13.41,17.44 11.71,18.14 9.86,18.14A8,8 0 0,1 10,2M10,4A6,6 0 0,0 4,10A6,6 0 0,0 10,16A6,6 0 0,0 16,10A6,6 0 0,0 10,4Z" />
+    </svg>
+  </div>
+  <div class="search-bar" id="searchBar">
+    <input type="text" id="gameInput" placeholder="Escribe el nombre del juego..." oninput="searchGame()">
+    <div class="autocomplete-list" id="autocompleteList"></div>
+    <div class="appid-output" id="output"></div>
+    <div class="error-message" id="errorMsg"></div>
+  </div>
+</div>
+
+<script>
+  let appList = [];
+
+  async function fetchAppList() {
+    const res = await fetch('https://corsproxy.io/?https://api.steampowered.com/ISteamApps/GetAppList/v2/');
+    const data = await res.json();
+    appList = data.applist.apps;
+  }
+
+  function toggleSearch() {
+    document.getElementById('searchBar').style.display = 'block';
+  }
+
+  function showError(message) {
+    const errorMsg = document.getElementById('errorMsg');
+    errorMsg.textContent = message;
+  }
+
+  function searchGame() {
+    const input = document.getElementById('gameInput').value.toLowerCase();
+    const list = document.getElementById('autocompleteList');
+    const output = document.getElementById('output');
+    const errorMsg = document.getElementById('errorMsg');
+
+    list.innerHTML = '';
+    output.innerHTML = '';
+    errorMsg.textContent = '';
+
+    if (input.length < 2) return;
+
+    const matches = appList
+      .filter(app => app.name.toLowerCase().includes(input))
+      .slice(0, 5);
+
+    matches.forEach(app => {
+      const item = document.createElement('div');
+      item.classList.add('autocomplete-item');
+      item.textContent = app.name;
+      item.onclick = () => {
+        document.getElementById('gameInput').value = app.name;
+        list.innerHTML = '';
+        output.innerHTML = `
+          <strong>${app.name}</strong><br>
+          AppID: <span class="appid-interactive" onclick="downloadZip(${app.appid})">${app.appid}</span>
+        `;
+      };
+      list.appendChild(item);
+    });
+  }
+
+function downloadZip(appid) {
+  const url = `https://steamdatabase.s3.eu-north-1.amazonaws.com/${appid}.zip`;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${appid}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+  // Matrix hacker background
+  const canvas = document.getElementById('matrixCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth;
+  const letters = '01';
+  const fontSize = 14;
+  const columns = canvas.width / fontSize;
+  const drops = Array(Math.floor(columns)).fill(1);
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#b84dff';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+      const text = letters[Math.floor(Math.random() * letters.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+  }
+
+  setInterval(drawMatrix, 50);
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  fetchAppList();
+</script>
+</body>
+</html>
